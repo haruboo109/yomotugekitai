@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- セキュリティ: 読み込めるスクリプト・通信先を限定する（下の2つのインラインスクリプトはハッシュで許可。tools/build_standalone.py が自動更新） -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-7Y1RELpuxdQwgSUU+ZNdBaCl4XETb6Zu17tgLJZNDY8=' 'sha256-MSxFoI7CpNahrr6zcLhYUZldHCXpRPV2rj+jCCKZf+Y='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' data: blob: https://cdn.jsdelivr.net https://0.peerjs.com wss://0.peerjs.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05070a">
+  <title>ヨモツ — 海上防衛戦</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Chakra+Petch:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+      "peerjs": "https://cdn.jsdelivr.net/npm/peerjs@1.5.4/+esm"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="ui"></div>
+  <script type="module">
+    // ヨモツの起動
+    //  ・サーバー（http://localhost:8765/）で開いた時: src/ の ES モジュールをそのまま読み込む（開発用）
+    //  ・index.html をダブルクリックで開いた時（file://）: ブラウザの制限で src/ と assets/ を直接読めないので、
+    //    tools/build_standalone.py でまとめた build/game.js と build/assets.js（モデル埋め込み）を読み込む
+    const standalone = location.protocol === 'file:' || new URLSearchParams(location.search).has('standalone');
+    const ui = document.getElementById('ui');
+    const say = (html) => { ui.innerHTML = `<div class="boot-msg">${html}</div>`; };
+    if (!standalone) {
+      import('./src/main.js');
+    } else {
+      say('読み込み中…');
+      const DEPS = /*BUILD:DEPS*/["three", "three/addons/controls/OrbitControls.js", "three/addons/loaders/GLTFLoader.js", "three/addons/postprocessing/EffectComposer.js", "three/addons/postprocessing/RenderPass.js", "three/addons/postprocessing/ShaderPass.js", "three/addons/postprocessing/UnrealBloomPass.js"]/*END*/;
+      try {
+        const mods = await Promise.all(DEPS.map((name) => import(name)));
+        window.__YOMOTSU_DEPS = Object.fromEntries(DEPS.map((name, i) => [name, mods[i]]));
+      } catch (e) {
+        say('three.js（描画ライブラリ）を読み込めませんでした。<br>インターネットに接続してから、もう一度開いてください。');
+        throw e;
+      }
+      const load = (src) => new Promise((ok, ng) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = ok;
+        s.onerror = () => ng(new Error(`${src} を読み込めませんでした`));
+        document.body.appendChild(s);
+      });
+      try {
+        say('モデルを読み込み中…（約20MB）');
+        await load('build/assets.js');
+        ui.innerHTML = '';
+        await load('build/game.js');
+      } catch (e) {
+        say('build フォルダのファイルが見つかりません。<br>tools\\build_standalone.py を実行してから開き直してください。');
+        throw e;
+      }
+    }
+  </script>
+</body>
+</html>
