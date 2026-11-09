@@ -1,0 +1,30 @@
+:root {
+  --ink: #e8edf2;
+  --ink-dim: #9aa6b2;
+  --ink-faint: #5d6874;
+  --panel: rgba(8, 12, 18, 0.72);
+  --panel-edge: rgba(160, 190, 220, 0.18);
+  --accent: #b77cff;
+  --accent-2: #ff5a4e;
+  --cyan: #5fe3ff;
+  --purple: #b77cff;
+  --red: #ff5a4e;
+  --ok: #7fe08a;
+  --warn: #ffcc4d;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-title: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-num: "Chakra Petch", "Consolas", monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+  background: #05070a; color: var(--ink); font-family: var(--font-ui);
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  touch-action: none; overscroll-behavior: none;
+}
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+#ui { position: fixed; inset: 0; pointer-events: none; }
+/* 起動中（ファイルから直接開いた時）の案内 */
+.boot-msg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 90vw; text-align: center; font-size: 15px; line-height: 1.8; color: var(--ink-dim); letter-spacing: .06em; }
+#ui .interactive, #ui button, #ui input, #ui select, #ui label { pointer-events: auto; }
